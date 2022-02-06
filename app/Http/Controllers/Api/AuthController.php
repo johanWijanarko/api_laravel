@@ -2,32 +2,28 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Http\Request;
+use App\Http\Controllers\Api\BaseController as BaseController;
+use Illuminate\Support\Facades\Auth;
 use Validator;
 use App\Models\User;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Api\BaseController as BaseController;
-// use App\Models\User;
 
 
-class AuthController extends Controller
+
+class AuthController extends BaseController
 {
-    public function signIn(Request $request)
+    public function signin(Request $request)
     {
-        if(Auth::attemp([
-            'email' => $request->email, 
-            'password' => $request->password,
-        ]))
-        {
-            $authUser = Auth::user();
-            $success['token'] = $authUser->createToken('MyAuthApp')->plainTextToken;
-            $success['name'] = $authUser->name;
-
+        if(Auth::attempt(['email' => $request->email, 'password' => $request->password])){ 
+            $authUser = Auth::user(); 
+            $success['token'] =  $authUser->createToken('MyAuthApp')->plainTextToken; 
+            $success['name'] =  $authUser->name;
+   
             return $this->sendResponse($success, 'User signed in');
-        } else{
+        } 
+        else{ 
             return $this->sendError('Unauthorised.', ['error'=>'Unauthorised']);
-        }
+        } 
     }
 
     public function signup(Request $request)
@@ -49,5 +45,14 @@ class AuthController extends Controller
         $success['name'] =  $user->name;
    
         return $this->sendResponse($success, 'User created successfully.');
+    }
+    
+    public function logout(Request $request)
+    {
+        // auth()->user->tokens()->delete();
+        $authUser = Auth::user(); 
+        $authUser->tokens()->delete();
+        $success['name'] =  $authUser->name;
+        return $this->sendResponse($success, 'User Logout successfully.');
     }
 }
